@@ -1,0 +1,40 @@
+.StripeElement {
+  display: block;
+  width: 100%;
+  height: calc(1.5em + .75rem + 2px);
+  padding: .375rem .75rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #495057;
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid #ced4da;
+  border-radius: .25rem;
+  transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+}
+
+#stripe-logo {
+  height:50px;
+  display: inline-block;
+}
+
+#stripe-cards {
+  width: 100%;
+  max-width: 250px;
+  display: inline-block;
+  margin-top: 1rem;
+}
+
+@media screen and (max-height:568px) {
+  #stripe-logo {
+    display: none;
+  }
+
+  #stripe-cards {
+    display: none;
+  }
+}
+
+.fake-link {
+  cursor: pointer;
+}

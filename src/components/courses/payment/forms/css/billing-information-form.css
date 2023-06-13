@@ -1,0 +1,9 @@
+#invoice-zip-code {
+  width: 35%;
+  display: inline-block;
+}
+
+#invoice-city {
+  width: 62%;
+  float: right;
+}
