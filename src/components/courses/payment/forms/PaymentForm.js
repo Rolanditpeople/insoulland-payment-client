@@ -26,7 +26,9 @@ class PaymentForm extends React.Component {
       payClickCounter: 0,
       paymentSuccess: false,
       paymentSuccessWithWarning: false,
-      chosenDonation: 10
+      chosenDonation: 10,
+      chosenPriceId: "price_1NOLDpBDk24l55XeO1mow5zy",
+      isRecurring: true
     };
     this.previousDonation = 0;
   }
@@ -44,9 +46,11 @@ class PaymentForm extends React.Component {
 
     if (this.previousDonation !== this.state.chosenDonation) {
       const paymentOptions = {
-        currency: "HUF",
+        currency: "EUR",
         amount: this.state.chosenDonation * 100
       };
+
+      console.log(paymentOptions);
   
       this.props._createPaymentIntent(paymentOptions);
       this.previousDonation = this.state.chosenDonation;
@@ -55,22 +59,27 @@ class PaymentForm extends React.Component {
   }
 
   handleSubmit = async () => {
-    const {
-      stripe,
-      elements,
-      signUpInformation
-    } = this.props;
+    if (this.state.isRecurring) {
+      window.location.href = "http://localhost:8080/create-subscription?priceId="+this.state.chosenPriceId;
 
-    this.setState({
-      loading: true,
-      error: undefined,
-      payClickCounter: this.state.payClickCounter + 1
-    });
-
-    stripe.confirmCardPayment(
-      this.props.paymentIntent.response.secret,
-      this.confirmCardPaymentDataFactory.newData(elements, signUpInformation, CardNumberElement)
-    ).then(this.handleStripeResult);
+    } else {
+      const {
+        stripe,
+        elements,
+        signUpInformation
+      } = this.props;
+  
+      this.setState({
+        loading: true,
+        error: undefined,
+        payClickCounter: this.state.payClickCounter + 1
+      });
+  
+      stripe.confirmCardPayment(
+        this.props.paymentIntent.response.secret,
+        this.confirmCardPaymentDataFactory.newData(elements, signUpInformation, CardNumberElement)
+      ).then(this.handleStripeResult);
+    }
   };
 
   handleStripeResult = (result) => {
@@ -136,6 +145,8 @@ class PaymentForm extends React.Component {
       );
     }
 
+    
+    console.log(this.state);
     return (
       <div className='container'>
         <div>
@@ -153,28 +164,25 @@ class PaymentForm extends React.Component {
 
         <div className="row">
             <div className="col-sm-12 mt-3">
-                <input id="gomb1" type="button" className="btn btn-dark btn-lg mt-3 me-3" name="plan" data-value="price_1N96j7BDk24l55XefXjIuFqh" style={{color: this.state.chosenDonation === 5 ? "#eeff00" : "#ffffff"}} value="5 &euro;" onClick={() => this.setState({chosenDonation: 5})} />
+                <input id="gomb1" type="button" className="btn btn-dark btn-lg mt-3 me-3" name="plan" data-value="price_1NOLCfBDk24l55XeCmTH2KZx" style={{color: this.state.chosenDonation === 5 ? "#eeff00" : "#ffffff"}} value="5 &euro;" onClick={(e) => this.setState({chosenDonation: 5, chosenPriceId: e.target.dataset.value})} />
             
-                <input id="gomb2" type="button" className="btn btn-dark btn-lg mt-3 me-3" name="plan" data-value="price_1N96jmBDk24l55Xe4BaIqSvS" style={{color: this.state.chosenDonation === 10 ? "#eeff00" : "#ffffff"}} value="10 &euro;" onClick={() => this.setState({chosenDonation: 10})} /> 
+                <input id="gomb2" type="button" className="btn btn-dark btn-lg mt-3 me-3" name="plan" data-value="price_1NOLDpBDk24l55XeO1mow5zy" style={{color: this.state.chosenDonation === 10 ? "#eeff00" : "#ffffff"}} value="10 &euro;" onClick={(e) => this.setState({chosenDonation: 10, chosenPriceId: e.target.dataset.value})} /> 
             
-                <input id="gomb3" type="button" className="btn btn-dark btn-lg mt-3 me-3" name="plan" data-value="price_1N96kXBDk24l55XeuBc9msLg" style={{color: this.state.chosenDonation === 20 ? "#eeff00" : "#ffffff"}} value="20 &euro;"  onClick={() => this.setState({chosenDonation: 20})} /> <br />
+                <input id="gomb3" type="button" className="btn btn-dark btn-lg mt-3 me-3" name="plan" data-value="price_1NOLFeBDk24l55XeUZqU2ije" style={{color: this.state.chosenDonation === 20 ? "#eeff00" : "#ffffff"}} value="20 &euro;"  onClick={(e) => this.setState({chosenDonation: 20, chosenPriceId: e.target.dataset.value})} /> <br />
             </div>
         </div>
 
         <div className="row mt-3">
             <div className="col-12 p-3">
-                <input type="checkbox" id="recurring" style={{width: "30px", height: "30px", verticalAlign: "bottom"}} />
+                <input checked={this.state.isRecurring} onChange={() => this.setState({isRecurring: !this.state.isRecurring})} type="checkbox" id="recurring" style={{width: "30px", height: "30px", verticalAlign: "bottom"}} />
                 <div style={{fontSize:"22px", marginLeft: "5px", display: "inline"}}>
                     Recurring payment (Your card will be charged monthly)
                 </div>
             </div>
         </div>
           <div className="row">
-              <div className="col-md-6">
+              <div className="col-md-12 pe-0">
                   <input className="form-control my-3" type="text" id="name" placeholder="Full name" />
-              </div>
-              <div className="col-md-6 pe-0">
-                  <input className="form-control my-3" type="text" id="email" placeholder="E-mail" />
               </div>
           </div>
           <div className="row">
@@ -195,34 +203,42 @@ class PaymentForm extends React.Component {
                   <input className="form-control my-3" type="text" id="address" placeholder="Address line 1" />
               </div>
           </div>
-
         </div>
 
+        {
+          !this.state.isRecurring ? (
+            <form>
 
-        <form>
+              <div class="row">
+                <div className="col-md-12 pe-0">
+                    <input className="form-control my-3" type="text" id="email" placeholder="E-mail" />
+                </div>
+              </div>
+              
   
-          <div className="form-group">
-            <span className="form-label">Kártyaszám:</span>
-            <CardNumberElement />
-          </div>
+              <div class="row my-3">
+                <div className="col-md-12 pe-0">
+                  <CardNumberElement options={{placeholder: 'Card number'}} />
+                </div>
+              </div>
 
-          <div className="form-group">
-            <span className="form-label">Lejárati dátum (hó/év):</span>
-            <CardExpiryElement />
-          </div>
+              <div class="row my-3">
+                <div className="col-md-12 pe-0">
+                  <CardExpiryElement options={{placeholder: 'YY/MM'}} />
+                </div>
+              </div>
 
-          <div className="form-group">
-            <span className="form-label">3 jegyű kód a kártya hátoldalán:</span>
-            <CardCvcElement />
-          </div>
-        </form>
+              <div class="row my-3">
+                <div className="col-md-12 pe-0">
+                  <CardCvcElement />
+                </div>
+              </div>
+            </form>
+          ) : null
+        }
 
         <div className="d-none d-sm-block pb-3">
-          {/*<button className="btn btn-lg btn-success float-right" disabled={!stripe || this.state.loading} onClick={this.handleSubmit}>
-            Fizetés ({this.formatNumberService.addSpacesToNumber(this.state.chosenDonation)} Ft)
-          </button>*/}
-
-          <button className="btn btn-dark btn-lg mb-3" style={{color: "#eeff00"}}>Start payment</button>
+          <button className="btn btn-dark btn-lg my-3" style={{color: "#eeff00"}} onClick={() => this.handleSubmit()}>Start payment</button>
           
         </div>
       </div>
